@@ -13,9 +13,13 @@ int main(int argc, char **argv)
 	mkdir("shadow");
 	chdir("shadow");
 
-	printf("Username:");
-	read(0, username, sizeof(username));
-	username[strlen(username)-1] = '\0';
+	if(argc == 2) strcpy(username, argv[1]);
+	else
+	{
+	    printf("Username: ");
+	    read(0, username, sizeof(username));
+	    username[strlen(username)-1] = '\0';
+	}
     fd = open(username, O_RDWR);
 	if (fd == -1)
 	{
@@ -25,9 +29,9 @@ int main(int argc, char **argv)
 	}
     else
     {
-	    printf("Current Password:");
+	    printf("Current Password: ");
 	    read(0, oldpassword, sizeof(oldpassword));
-        read(fd, correctpass, PASSSIZE);
+        read(fd, correctpass, sizeof(correctpass));
         if(strcmp(oldpassword, correctpass) != 0) 
         {
             printf("Wrong Password!!\n");
@@ -35,9 +39,9 @@ int main(int argc, char **argv)
         }
     }
 
-	printf("New Password:");
+	printf("New Password: ");
 	read(0, password, sizeof(password));
-	printf("Confirm Password:");
+	printf("Confirm Password: ");
     read(0, confirm, sizeof(confirm));
     if(strcmp(password, confirm) != 0) printf("Passwords don't match!!");
 

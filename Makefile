@@ -134,7 +134,7 @@ UPROGS=\
 	$U/_zombie\
 	$U/_md5\
 	$U/_passwd\
-	
+	$U/_login\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
