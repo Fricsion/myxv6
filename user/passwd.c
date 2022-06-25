@@ -2,18 +2,20 @@
 #include "kernel/stat.h"
 #include "kernel/fcntl.h"
 #include "user/user.h"
-#define PASSSIZE 33 
+#define USERSIZE 17
+#define PASSSIZE 65 
+#define HASHSIZE 33
 
 int main(int argc, char **argv)
 {
-	char username[9], password[PASSSIZE], oldpassword[PASSSIZE], confirm[PASSSIZE], correctpass[PASSSIZE];
+	char username[USERSIZE], password[PASSSIZE], oldpassword[PASSSIZE], confirm[PASSSIZE], correcthash[HASHSIZE], oldhash[HASHSIZE], newhash[HASHSIZE];
 	int isNewUser = 0;
 	int fd;
 
 	mkdir("shadow");
 	chdir("shadow");
 
-	if(argc == 2) strcpy(username, argv[1]);
+	if(argc >= 2) strcpy(username, argv[1]);
 	else
 	{
 	    printf("Username: ");
@@ -24,39 +26,50 @@ int main(int argc, char **argv)
 	if (fd == -1)
 	{
 	    isNewUser = 1;
-		fd = open(username, O_CREATE);
-		fd = open(username, O_RDWR);
 	}
     else
     {
 	    printf("Current Password: ");
 	    read(0, oldpassword, sizeof(oldpassword));
-        read(fd, correctpass, sizeof(correctpass));
-        if(strcmp(oldpassword, correctpass) != 0) 
+	    oldpassword[strlen(oldpassword)-1] = '\0';
+	    MD5Get(oldpassword, sizeof(oldpassword), oldhash);
+        read(fd, correcthash, sizeof(correcthash));
+        if(strcmp(oldhash, correcthash) != 0) 
         {
             printf("Wrong Password!!\n");
-            exit(0);
+            exit(1);
         }
     }
 
 	printf("New Password: ");
 	read(0, password, sizeof(password));
+	password[strlen(password)-1] = '\0';
 	printf("Confirm Password: ");
     read(0, confirm, sizeof(confirm));
-    if(strcmp(password, confirm) != 0) printf("Passwords don't match!!");
+	confirm[strlen(confirm)-1] = '\0';
+    if(strcmp(password, confirm) != 0)
+    {
+        printf("Passwords don't match!!\n");
+        exit(1);
+    }
+    else
+    {
+        MD5Get(password, sizeof(password), newhash);
+    }
 
 	if (isNewUser == 1)
 	{
-	    fprintf(fd, "%s", password);
-	    exit(0);
+		fd = open(username, O_CREATE);
+		fd = open(username, O_RDWR);
+	    fprintf(fd, "%s", newhash);
 	}
 	else
 	{
 	    close(fd);
-	    if(unlink(username) < 0) printf("Change of password failed!!");
+	    if(unlink(username) < 0) printf("Change of password failed!!\n");
 	    fd = open(username, O_CREATE);
 	    fd = open(username, O_RDWR);
-	    fprintf(fd, "%s", password);
+	    fprintf(fd, "%s", newhash);
 	}
 
 	close(fd);
