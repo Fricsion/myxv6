@@ -132,6 +132,7 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+	$U/_clear\
 	$U/_md5\
 	$U/_passwd\
 	$U/_login\
