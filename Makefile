@@ -132,9 +132,11 @@ UPROGS=\
 	$U/_grind\
 	$U/_wc\
 	$U/_zombie\
+	$U/_md5\
 	$U/_passwd\
 	$U/_login\
-	$U/_md5\
+	$U/_ps\
+	$U/_uidtest\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

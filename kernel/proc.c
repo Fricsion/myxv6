@@ -118,6 +118,7 @@ allocproc(void)
 
 found:
   p->pid = allocpid();
+  p->uid = 0;
   p->state = USED;
 
   // Allocate a trapframe page.
@@ -653,4 +654,35 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+int ps() {
+    struct proc *process;
+    intr_on();
+
+    printf("UID \t PID \t STATE \t NAME \n");
+    for(process = proc; process < &proc[NPROC]; process++) {
+        acquire(&process -> lock);
+        if(process -> state == SLEEPING) printf(" %d \t %d \t SLEEP \t %s \n", process -> uid, process -> pid, process -> name);
+        else if(process -> state == RUNNING) printf(" %d \t %d \t RUN \t %s \n", process -> uid, process -> pid, process -> name);
+        else if(process -> state == RUNNABLE) printf(" %d \t %d \t RNABLE \t %s \n", process -> uid, process -> pid, process -> name);
+        else if(process -> state == ZOMBIE) printf(" %d \t %d \t ZOMBIE \t %s \n", process -> uid, process -> pid, process -> name);
+        release(&process -> lock);
+    }
+    return 22;
+}
+
+int getuid(int pid) {
+    int uid;
+    struct proc *process;
+    for(process = proc; process < &proc[NPROC]; process++) {
+        acquire(&process -> lock);
+        if(process -> pid == pid) {
+            uid = process -> uid;
+            release(&process -> lock);
+            break;
+        }
+        release(&process -> lock);
+    }
+    return uid;
 }
