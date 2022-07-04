@@ -5,15 +5,34 @@
 #define USERSIZE 17
 #define PASSSIZE 65 
 #define HASHSIZE 33
+#define UIDSIZE 3
 
 int main(int argc, char **argv)
 {
-	char username[USERSIZE], password[PASSSIZE], oldpassword[PASSSIZE], confirm[PASSSIZE], correcthash[HASHSIZE], oldhash[HASHSIZE], newhash[HASHSIZE];
+	setuid(0);
+	char username[USERSIZE], password[PASSSIZE], oldpassword[PASSSIZE], confirm[PASSSIZE], correcthash[HASHSIZE], oldhash[HASHSIZE], newhash[HASHSIZE], uid[UIDSIZE];
 	int isNewUser = 0;
-	int fd;
+	int fd, dstatus, newuid = 10;
 
 	mkdir("shadow");
-	chdir("shadow");
+	chdir("shadow"); 
+    fd = open("newuid", O_RDWR);
+    if (fd == -1) {
+        fd = open("newuid", O_CREATE);
+        fd = open("newuid", O_RDWR);
+        fprintf(fd, "%d", newuid);
+        close(fd);
+    }
+    else {
+        read(fd, uid, UIDSIZE);
+        newuid = atoi(uid) + 1;
+        close(fd);
+        unlink("newuid");
+        fd = open("newuid", O_CREATE);
+        fd = open("newuid", O_RDWR);
+        fprintf(fd, "%d", newuid);
+        close(fd);
+    }
 
 	if(argc >= 2) strcpy(username, argv[1]);
 	else
@@ -22,13 +41,14 @@ int main(int argc, char **argv)
 	    read(0, username, sizeof(username));
 	    username[strlen(username)-1] = '\0';
 	}
-    fd = open(username, O_RDWR);
-	if (fd == -1)
+    dstatus = chdir(username);
+	if (dstatus == -1)
 	{
 	    isNewUser = 1;
 	}
     else
     {
+        fd = open("passhash", O_RDWR);
 	    printf("Current Password: ");
 	    read(0, oldpassword, sizeof(oldpassword));
 	    oldpassword[strlen(oldpassword)-1] = '\0';
@@ -59,16 +79,22 @@ int main(int argc, char **argv)
 
 	if (isNewUser == 1)
 	{
-		fd = open(username, O_CREATE);
-		fd = open(username, O_RDWR);
+	    mkdir(username);
+	    chdir(username);
+		fd = open("passhash", O_CREATE);
+		fd = open("passhash", O_RDWR);
 	    fprintf(fd, "%s", newhash);
+	    close(fd);
+	    fd = open("uid", O_CREATE);
+	    fd = open("uid", O_RDWR);
+	    fprintf(fd, "%d", newuid);
 	}
 	else
 	{
 	    close(fd);
-	    if(unlink(username) < 0) printf("Change of password failed!!\n");
-	    fd = open(username, O_CREATE);
-	    fd = open(username, O_RDWR);
+	    if(unlink("passhash") < 0) printf("Change of password failed!!\n");
+	    fd = open("passhash", O_CREATE);
+	    fd = open("passhash", O_RDWR);
 	    fprintf(fd, "%s", newhash);
 	}
 
