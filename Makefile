@@ -136,8 +136,8 @@ UPROGS=\
 	$U/_md5\
 	$U/_passwd\
 	$U/_login\
+	$U/_whoami\
 	$U/_ps\
-	$U/_uidtest\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

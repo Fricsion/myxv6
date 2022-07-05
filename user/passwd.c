@@ -27,11 +27,6 @@ int main(int argc, char **argv)
         read(fd, uid, UIDSIZE);
         newuid = atoi(uid) + 1;
         close(fd);
-        unlink("newuid");
-        fd = open("newuid", O_CREATE);
-        fd = open("newuid", O_RDWR);
-        fprintf(fd, "%d", newuid);
-        close(fd);
     }
 
 	if(argc >= 2) strcpy(username, argv[1]);
@@ -88,6 +83,13 @@ int main(int argc, char **argv)
 	    fd = open("uid", O_CREATE);
 	    fd = open("uid", O_RDWR);
 	    fprintf(fd, "%d", newuid);
+	    close(fd);
+        chdir("..");
+        unlink("newuid");
+        fd = open("newuid", O_CREATE);
+        fd = open("newuid", O_RDWR);
+        fprintf(fd, "%d", newuid);
+        close(fd);
 	}
 	else
 	{
