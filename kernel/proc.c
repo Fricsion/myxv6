@@ -585,6 +585,11 @@ kill(int pid)
   for(p = proc; p < &proc[NPROC]; p++){
     acquire(&p->lock);
     if(p->pid == pid){
+      if(myproc()->uid != p->uid) {
+        printf("kill: Permission denied.\n");
+        release(&p->lock);
+        break;
+      }
       p->killed = 1;
       if(p->state == SLEEPING){
         // Wake process from sleep().
@@ -664,10 +669,10 @@ int ps() {
     printf("UID \t PID \t STATE \t NAME \n");
     for(process = proc; process < &proc[NPROC]; process++) {
         acquire(&process -> lock);
-        if(process -> state == SLEEPING) printf(" %d \t %d \t SLEEP \t %s \n", process -> uid, process -> pid, process -> name);
-        else if(process -> state == RUNNING) printf(" %d \t %d \t RUN \t %s \n", process -> uid, process -> pid, process -> name);
-        else if(process -> state == RUNNABLE) printf(" %d \t %d \t RNABLE \t %s \n", process -> uid, process -> pid, process -> name);
-        else if(process -> state == ZOMBIE) printf(" %d \t %d \t ZOMBIE \t %s \n", process -> uid, process -> pid, process -> name);
+        if(process -> state == SLEEPING) printf("%d \t %d \t SLEEP \t %s \n", process -> uid, process -> pid, process -> name);
+        else if(process -> state == RUNNING) printf("%d \t %d \t RUN \t %s \n", process -> uid, process -> pid, process -> name);
+        else if(process -> state == RUNNABLE) printf("%d \t %d \t RNABL \t %s \n", process -> uid, process -> pid, process -> name);
+        else if(process -> state == ZOMBIE) printf("%d \t %d \t ZOMBI \t %s \n", process -> uid, process -> pid, process -> name);
         release(&process -> lock);
     }
     return 22;
