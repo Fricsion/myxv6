@@ -23,6 +23,27 @@ fmtname(char *path)
 }
 
 void
+perm(uint perm)
+{
+  if(perm < 0 || perm > 7) return;
+  if(perm >= 4) {
+    perm -= 4;
+    printf("r");
+  }
+  else printf("-");
+  if(perm >= 2) {
+    perm -= 2;
+    printf("w");
+  }
+  else printf("-");
+  if(perm >= 1) {
+    perm -= 1;
+    printf("x");
+  }
+  else printf("-");
+}
+
+void
 ls(char *path)
 {
   char buf[512], *p;
@@ -43,7 +64,9 @@ ls(char *path)
 
   switch(st.type){
   case T_FILE:
-    printf("%s %d %d %l\n", fmtname(path), st.type, st.ino, st.size);
+    perm(st.perm_self);
+    perm(st.perm_other);
+    printf(" %d %s %d %d %d\n", st.uid, fmtname(path), st.type, st.ino, st.size);
     break;
 
   case T_DIR:
@@ -63,7 +86,9 @@ ls(char *path)
         printf("ls: cannot stat %s\n", buf);
         continue;
       }
-      printf("%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
+      perm(st.perm_self);
+      perm(st.perm_other);
+      printf(" %d %s %d %d %d\n", st.uid, fmtname(buf), st.type, st.ino, st.size);
     }
     break;
   }
