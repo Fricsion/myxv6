@@ -107,6 +107,8 @@ extern uint64 sys_uptime(void);
 extern uint64 sys_ps(void);
 extern uint64 sys_setuid(void);
 extern uint64 sys_getuid(void);
+extern uint64 sys_chmod(void);
+extern uint64 sys_chown(void);
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -133,6 +135,8 @@ static uint64 (*syscalls[])(void) = {
 [SYS_ps]      sys_ps,
 [SYS_setuid]  sys_setuid,
 [SYS_getuid]  sys_getuid,
+[SYS_chmod]   sys_chmod,
+[SYS_chown]   sys_chown,
 };
 
 void

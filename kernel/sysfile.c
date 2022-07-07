@@ -53,6 +53,18 @@ fdalloc(struct file *f)
 }
 
 uint64
+sys_chmod(void)
+{
+  return 0;
+}
+
+uint64
+sys_chown(void)
+{
+  return 0;
+}
+
+uint64
 sys_dup(void)
 {
   struct file *f;

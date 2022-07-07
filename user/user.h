@@ -6,10 +6,10 @@ int fork(void);
 int exit(int) __attribute__((noreturn));
 int wait(int*);
 int pipe(int*);
-int write(int, const void*, int); //TODO: Write permission
-int read(int, void*, int); //TODO: Read permission
+int write(int, const void*, int); 
+int read(int, void*, int); 
 int close(int);
-int kill(int); //COMPLETED: Kill permission
+int kill(int); 
 int exec(char*, char**); // TODO: Execute permission
 int open(const char*, int); // TODO: rwx
 int mknod(const char*, short, short); //TODO: rwx
