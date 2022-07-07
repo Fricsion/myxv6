@@ -55,12 +55,61 @@ fdalloc(struct file *f)
 uint64
 sys_chmod(void)
 {
+  char path[MAXPATH];
+  uint perm;
+  struct inode *ip;
+
+  if(argint(0, &perm) < 0 || argstr(1, path, MAXPATH) < 0 )
+	return -1;
+  if(perm / 10 > 7 || perm % 10 > 7) {
+    return -1;
+  }
+
+  begin_op();
+  if((ip = namei(path)) == 0) {
+	end_op();
+	return -1;
+  }
+  if (0 != myproc()->uid && myproc()->uid != 0) {
+    printf("chmod: Permission denied.\n");
+    end_op();
+    return -1;
+  }
+  ilock(ip);
+  ip->perm_self = perm / 10;
+  ip->perm_other = perm % 10;
+  iupdate(ip);
+  iunlock(ip);
+  end_op();
   return 0;
 }
 
 uint64
 sys_chown(void)
 {
+  char path[MAXPATH];
+  int newuid;
+  struct inode *ip;
+
+  if(argint(0, &newuid) < 0 || argstr(1, path, MAXPATH) < 0 )
+	return -1;
+
+  begin_op();
+  if((ip = namei(path)) == 0) {
+	end_op();
+	return -1;
+  }
+
+  if(ip->uid != myproc()->uid && myproc()->uid != 0) {
+    printf("chown: Permission denied.\n");
+    end_op();
+    return -1;
+  }
+  ilock(ip);
+  ip->uid = newuid;
+  iupdate(ip);
+  iunlock(ip);
+  end_op();
   return 0;
 }
 

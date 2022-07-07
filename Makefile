@@ -138,6 +138,8 @@ UPROGS=\
 	$U/_login\
 	$U/_whoami\
 	$U/_ps\
+	$U/_chmod\
+	$U/_chown\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)

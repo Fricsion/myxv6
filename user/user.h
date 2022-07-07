@@ -26,6 +26,8 @@ int uptime(void);
 int ps(void);
 int setuid(int);
 int getuid(int);
+int chmod(int, char*);
+int chown(int, char*);
 
 // ulib.c
 int stat(const char*, struct stat*);

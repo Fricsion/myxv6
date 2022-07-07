@@ -585,7 +585,7 @@ kill(int pid)
   for(p = proc; p < &proc[NPROC]; p++){
     acquire(&p->lock);
     if(p->pid == pid){
-      if(myproc()->uid != p->uid) {
+      if(myproc()->uid != p->uid && myproc()->uid != 0) {
         printf("kill: Permission denied.\n");
         release(&p->lock);
         break;

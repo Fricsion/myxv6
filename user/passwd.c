@@ -82,14 +82,21 @@ int main(int argc, char **argv)
 	    close(fd);
 	    fd = open("uid", O_CREATE);
 	    fd = open("uid", O_RDWR);
-	    fprintf(fd, "%d", newuid);
-	    close(fd);
-        chdir("..");
-        unlink("newuid");
-        fd = open("newuid", O_CREATE);
-        fd = open("newuid", O_RDWR);
-        fprintf(fd, "%d", newuid);
-        close(fd);
+
+		if(strcmp(username, "root") == 0) {
+			fprintf(fd, "%d", 0);
+			close(fd);
+		}
+		else {
+			fprintf(fd, "%d", newuid);
+			close(fd);
+			chdir("..");
+			unlink("newuid");
+			fd = open("newuid", O_CREATE);
+			fd = open("newuid", O_RDWR);
+			fprintf(fd, "%d", newuid);
+			close(fd);
+		}
 	}
 	else
 	{

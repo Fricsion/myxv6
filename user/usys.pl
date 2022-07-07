@@ -39,4 +39,5 @@ entry("uptime");
 entry("ps");
 entry("setuid");
 entry("getuid");
-
+entry("chmod");
+entry("chown");
