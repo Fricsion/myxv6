@@ -11,12 +11,12 @@ int read(int, void*, int);
 int close(int);
 int kill(int); 
 int exec(char*, char**); // TODO: Execute permission
-int open(const char*, int); // TODO: rwx
-int mknod(const char*, short, short); //TODO: rwx
-int unlink(const char*); //TODO: Write permission
+int open(const char*, int); // TODO: R/W permission
+int mknod(const char*, short, short);
+int unlink(const char*);
 int fstat(int fd, struct stat*);
-int link(const char*, const char*); //TODO: Write permission
-int mkdir(const char*); //TODO: Write permission
+int link(const char*, const char*);
+int mkdir(const char*);
 int chdir(const char*); //TODO: Read permission
 int dup(int);
 int getpid(void);

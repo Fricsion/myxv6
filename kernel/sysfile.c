@@ -70,12 +70,13 @@ sys_chmod(void)
 	end_op();
 	return -1;
   }
-  if (0 != myproc()->uid && myproc()->uid != 0) {
+  ilock(ip);
+  if (myproc()->uid != ip->uid && myproc()->uid != 0) {
     printf("chmod: Permission denied.\n");
+    iunlock(ip);
     end_op();
     return -1;
   }
-  ilock(ip);
   ip->perm_self = perm / 10;
   ip->perm_other = perm % 10;
   iupdate(ip);
@@ -100,12 +101,13 @@ sys_chown(void)
 	return -1;
   }
 
+  ilock(ip);
   if(ip->uid != myproc()->uid && myproc()->uid != 0) {
     printf("chown: Permission denied.\n");
+    iunlock(ip);
     end_op();
     return -1;
   }
-  ilock(ip);
   ip->uid = newuid;
   iupdate(ip);
   iunlock(ip);
@@ -258,7 +260,6 @@ sys_unlink(void)
     end_op();
     return -1;
   }
-
   ilock(dp);
 
   // Cannot unlink "." or "..".
@@ -272,6 +273,12 @@ sys_unlink(void)
   if(ip->nlink < 1)
     panic("unlink: nlink < 1");
   if(ip->type == T_DIR && !isdirempty(ip)){
+    printf("unlink: Cannot delete directory.\n");
+    iunlockput(ip);
+    goto bad;
+  }
+  if(myproc()->uid != ip->uid && myproc()->uid != 0) {
+    printf("unlink: Permission denied.\n");
     iunlockput(ip);
     goto bad;
   }
@@ -299,8 +306,10 @@ bad:
   return -1;
 }
 
+#define DEFAULT_SELF 6
+#define DEFAULT_OTHER 4
 static struct inode*
-create(char *path, short type, short major, short minor)
+create(char *path, short type, short major, short minor, uint uid, uint perm_self, uint perm_other)
 {
   struct inode *ip, *dp;
   char name[DIRSIZ];
@@ -326,6 +335,9 @@ create(char *path, short type, short major, short minor)
   ip->major = major;
   ip->minor = minor;
   ip->nlink = 1;
+  ip->uid = uid;
+  ip->perm_self = perm_self;
+  ip->perm_other = perm_other;
   iupdate(ip);
 
   if(type == T_DIR){  // Create . and .. entries.
@@ -344,6 +356,17 @@ create(char *path, short type, short major, short minor)
   return ip;
 }
 
+/* Permission bits to int calculation
+0 000 ---
+1 001 --x
+2 010 -w-
+3 011 -wx
+4 100 r--
+5 101 r-x
+6 110 rw-
+7 111 rwx
+*/
+
 uint64
 sys_open(void)
 {
@@ -359,7 +382,7 @@ sys_open(void)
   begin_op();
 
   if(omode & O_CREATE){
-    ip = create(path, T_FILE, 0, 0);
+    ip = create(path, T_FILE, 0, 0, myproc()->uid, DEFAULT_SELF, DEFAULT_OTHER);
     if(ip == 0){
       end_op();
       return -1;
@@ -419,7 +442,7 @@ sys_mkdir(void)
   struct inode *ip;
 
   begin_op();
-  if(argstr(0, path, MAXPATH) < 0 || (ip = create(path, T_DIR, 0, 0)) == 0){
+  if(argstr(0, path, MAXPATH) < 0 || (ip = create(path, T_DIR, 0, 0, myproc()->uid, DEFAULT_SELF, DEFAULT_OTHER)) == 0){
     end_op();
     return -1;
   }
@@ -439,7 +462,7 @@ sys_mknod(void)
   if((argstr(0, path, MAXPATH)) < 0 ||
      argint(1, &major) < 0 ||
      argint(2, &minor) < 0 ||
-     (ip = create(path, T_DEVICE, major, minor)) == 0){
+     (ip = create(path, T_DEVICE, major, minor, 0, 7, 7)) == 0){
     end_op();
     return -1;
   }

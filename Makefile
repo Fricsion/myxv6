@@ -117,29 +117,25 @@ mkfs/mkfs: mkfs/mkfs.c $K/fs.h $K/param.h
 
 UPROGS=\
 	$U/_cat\
+	$U/_chmod\
+	$U/_chown\
+	$U/_clear\
 	$U/_echo\
 	$U/_forktest\
 	$U/_grep\
 	$U/_init\
 	$U/_kill\
 	$U/_ln\
+	$U/_login\
 	$U/_ls\
+	$U/_md5\
 	$U/_mkdir\
+	$U/_passwd\
+	$U/_ps\
 	$U/_rm\
 	$U/_sh\
-	$U/_stressfs\
-	$U/_usertests\
-	$U/_grind\
 	$U/_wc\
-	$U/_zombie\
-	$U/_clear\
-	$U/_md5\
-	$U/_passwd\
-	$U/_login\
 	$U/_whoami\
-	$U/_ps\
-	$U/_chmod\
-	$U/_chown\
 
 fs.img: mkfs/mkfs README $(UPROGS)
 	mkfs/mkfs fs.img README $(UPROGS)
