@@ -23,6 +23,7 @@ int main(int argc, char **argv)
         fd = open("newuid", O_RDWR);
         fprintf(fd, "%d", newuid);
         close(fd);
+		chmod(60, "newuid");
     }
     else {
         read(fd, uid, UIDSIZE);
@@ -76,27 +77,32 @@ int main(int argc, char **argv)
 	if (isNewUser == 1)
 	{
 	    mkdir(username);
+		chmod(60, username);
 	    chdir(username);
 		fd = open("passhash", O_CREATE);
 		fd = open("passhash", O_RDWR);
 	    fprintf(fd, "%s", newhash);
 	    close(fd);
+		chmod(60, "passhash");
 	    fd = open("uid", O_CREATE);
 	    fd = open("uid", O_RDWR);
 
 		if(strcmp(username, "root") == 0) {
 			fprintf(fd, "%d", 0);
 			close(fd);
+			chmod(60, "uid");
 		}
 		else {
 			fprintf(fd, "%d", newuid);
 			close(fd);
+			chmod(60, "uid");
 			chdir("..");
 			unlink("newuid");
 			fd = open("newuid", O_CREATE);
 			fd = open("newuid", O_RDWR);
 			fprintf(fd, "%d", newuid);
 			close(fd);
+			chmod(60, "newuid");
 		}
 	}
 	else
@@ -109,5 +115,6 @@ int main(int argc, char **argv)
 	}
 
 	close(fd);
+	chmod(60, "passhash");
 	exit(0);
 }
