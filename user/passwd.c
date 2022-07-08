@@ -15,6 +15,7 @@ int main(int argc, char **argv)
 	int fd, dstatus, newuid = 10;
 
 	mkdir("shadow");
+	chmod(60, "shadow");
 	chdir("shadow"); 
     fd = open("newuid", O_RDWR);
     if (fd == -1) {

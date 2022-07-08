@@ -98,6 +98,7 @@ ls(char *path)
 int
 main(int argc, char *argv[])
 {
+  setuid(0);
   int i;
 
   if(argc < 2){

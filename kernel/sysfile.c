@@ -374,7 +374,7 @@ sys_open(void)
   int fd, omode;
   struct file *f;
   struct inode *ip;
-  int n;
+  int n, deny = 1;
 
   if((n = argstr(0, path, MAXPATH)) < 0 || argint(1, &omode) < 0)
     return -1;
@@ -394,6 +394,7 @@ sys_open(void)
     }
     ilock(ip);
     if(ip->type == T_DIR && omode != O_RDONLY){
+      printf("open: Is a directory.\n");
       iunlockput(ip);
       end_op();
       return -1;
@@ -401,6 +402,36 @@ sys_open(void)
   }
 
   if(ip->type == T_DEVICE && (ip->major < 0 || ip->major >= NDEV)){
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+
+  if(myproc()->uid == ip->uid) {
+    if(omode == O_RDONLY) {
+      if(ip->perm_self >= 4 && ip->perm_self <= 7) deny = 0;
+    }
+    else if(omode == O_WRONLY) {
+      if(ip->perm_self == 2 || ip->perm_self == 3 || ip->perm_self == 6 || ip->perm_self == 7) deny = 0;
+    }
+    else {
+      if(ip->perm_self == 6 || ip->perm_self == 7) deny = 0;
+    }
+  }
+  else {
+    if(omode == O_RDONLY) {
+      if(ip->perm_other >= 4 && ip->perm_other <= 7) deny = 0;
+    }
+    else if(omode == O_WRONLY) {
+      if(ip->perm_other == 2 || ip->perm_other == 3 || ip->perm_other == 6 || ip->perm_other == 7) deny = 0;
+    }
+    else {
+      if(ip->perm_other == 6 || ip->perm_other == 7) deny = 0;
+    }
+  }
+  if(myproc()->uid == 0) deny = 0;
+  if(deny == 1) {
+    printf("open: Permission denied.\n");
     iunlockput(ip);
     end_op();
     return -1;
@@ -477,6 +508,7 @@ sys_chdir(void)
   char path[MAXPATH];
   struct inode *ip;
   struct proc *p = myproc();
+  int deny = 1;
   
   begin_op();
   if(argstr(0, path, MAXPATH) < 0 || (ip = namei(path)) == 0){
@@ -485,6 +517,20 @@ sys_chdir(void)
   }
   ilock(ip);
   if(ip->type != T_DIR){
+    printf("chdir: Not a directory.\n");
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+  if(p->uid == ip->uid) {
+    if(ip->perm_self >= 4 && ip->perm_self <= 7) deny = 0;
+  }
+  else {
+    if(ip->perm_other >= 4 && ip->perm_other <= 7) deny = 0;
+  }
+  if(p->uid == 0) deny = 0;
+  if(deny == 1) {
+    printf("chdir: Permission denied.\n");
     iunlockput(ip);
     end_op();
     return -1;
@@ -500,8 +546,10 @@ uint64
 sys_exec(void)
 {
   char path[MAXPATH], *argv[MAXARG];
-  int i;
+  int i, deny = 1;
+  struct inode *ip;
   uint64 uargv, uarg;
+
 
   if(argstr(0, path, MAXPATH) < 0 || argaddr(1, &uargv) < 0){
     return -1;
@@ -524,6 +572,28 @@ sys_exec(void)
     if(fetchstr(uarg, argv[i], PGSIZE) < 0)
       goto bad;
   }
+
+  begin_op();
+  if((ip = namei(path)) == 0) {
+	end_op();
+	return -1;
+  }
+
+  ilock(ip);
+  if (myproc()->uid == ip->uid) {
+    if(ip->perm_self % 2 == 1) deny = 0;
+  }
+  else {
+    if(ip->perm_other % 2 == 1) deny = 0;
+  }
+  if (deny == 1) {
+    printf("exec: Permission denied.\n");
+    iunlock(ip);
+    end_op();
+    goto bad;
+  }
+  iunlock(ip);
+  end_op();
 
   int ret = exec(path, argv);
 
